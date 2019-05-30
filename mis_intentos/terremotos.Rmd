@@ -1,0 +1,93 @@
+---
+title: "Terremotos"
+author: "Patricio Said"
+date: "29 de mayo de 2019"
+output: html_document
+---
+
+```{r }
+
+terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/terremotos.csv")
+
+mes <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/mes.csv")
+
+```
+
+# Obtener nombre de ciudad
+
+
+
+
+
+```{r}
+
+library(ggmap)
+
+library("opencage")
+library("tidyverse")
+
+
+output2 <- opencage_reverse(latitude = 51.5034070, 
+                            longitude = -0.1275920,key = "64d5b46ffd3543139b65ce7f363189f6")
+output2$rate_info %>% knitr::kable()
+ciudad<- as.character(output2$results$components.city )
+pais <- as.character(output2$results$components.country)
+paste( ciudad, ", " , pais)
+str(ciudad)
+
+```
+
+```{r}
+terremotos <- terremotos %>%   filter( tipo == "terremoto" ) %>% mutate(energia =10^(11.8 + 1.5 *magnitud) )
+terremotos2 <- terremotos %>% filter(magnitud <6)
+
+terremotos2
+head(terremotos)
+
+library(ggplot2)
+#install.packages("maps")
+library(maps)
+install.packages("ggthemes")
+library(ggthemes)
+library(scales)
+#install.packages("scales")
+
+world <- ggplot() +
+    borders("world", colour = "gray85", fill = "gray80") +
+    theme_map() 
+mapa <- world +
+  geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
+             data = terremotos, alpha= 0.6) +
+#  scale_color_gradientn(colours = pal)+
+ # scale_colour_gradient2( low = "#0000FF" , mid ="#FFFF00", high = "#FF0000")+
+  scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange", "red"))+
+  scale_size_continuous(range = c(1,40))+
+    theme(legend.position = "none")
+mapa  
+
+
+
+```
+
+```{r}
+terremotos2 <- terremotos %>% filter(fecha > "1965-09-04" & fecha <"1975-09-18")
+mapa <- world +
+  geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
+             data = terremotos2, alpha= 0.6) +
+#  scale_color_gradientn(colours = pal)+
+ # scale_colour_gradient2( low = "#0000FF" , mid ="#FFFF00", high = "#FF0000")+
+  scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange", "red"))+
+  scale_size_continuous(range = c(1,40))+
+    theme(legend.position = "none")+
+      labs(title = "{frame_time}") + 
+    transition_time(year)
+
+#devtools::install_github('thomasp85/gganimate')
+
+#install.packages("gganimate")
+library(gganimate)
+#ani.options(interval = 0.2)
+gganimate(mapa)
+
+```
+
