@@ -1,0 +1,130 @@
+---
+title: "Terremoto_cqb_miercolesdedatos"
+output: github_document
+---
+
+
+# Los datos desde el gitbub de datos-de-miercoles  
+
+```{r include=F}
+
+terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/terremotos.csv")
+
+```
+
+### datos para plotear mundo  
+
+Buscar las coordenadas de la zona a plotear   
+Para Coquimbo usar `xlim = c(-83.826, -63.204),ylim = c( -23.037, -39.669)` dentro de `coord_sf()`
+
+```{r include=F}
+library("rnaturalearth")
+world <- ne_countries(scale = "medium", returnclass = "sf")
+library(ggplot2)
+library(ggthemes)
+library(tidyverse)
+ggplot() +
+  borders("world", colour = "gray85", # color limites de paises
+           fill = "black") +  # color de la tierra
+  coord_sf( xlim = c(-83.826, -63.204),ylim = c( -23.037, -39.669))+ 
+    theme_map()+
+    theme(panel.grid.major = element_line(colour = "darkgrey"), # lineas del grid
+          panel.background = element_rect(fill = "darkgrey"))   # fondo
+
+```
+
+## Preparando los datos  
+
+### Escala Richter
+
+Para visualizar mejor los diferentes sismos transformar la escala Richter con logaritmo (http://matematicasentumundo.es/NATURALEZA/naturaleza_Richter.htm) : 
+
+```{r}
+
+terremotos <- terremotos %>%   filter( tipo == "terremoto" ) %>% 
+  mutate(energia =10^(11.8 + 1.5 *magnitud) )
+
+```
+
+
+```{r}
+# Verificando el dia del terremoto
+terremotos %>% filter(fecha == "2015-09-16") %>%  arrange(desc(magnitud))
+
+terremoto_coquimbo <- terremotos %>% 
+  filter(fecha > "2015-07-16" & fecha < "2015-11-16") %>%  
+  filter(latitud < -23.037 & latitud > -39.669) %>% 
+  filter( longitud < -63.204 & longitud > -83.826 )
+
+
+dim(terremoto_coquimbo) # 51 obs
+
+library(ggthemes)
+library(gganimate)
+
+
+
+terremoto_coquimbo %>%  ggplot() +
+  borders("world", colour = "gray85", # color limites de paises
+           fill = "black") +  # color de la tierra
+  coord_sf( xlim = c(-83.826, -63.204),ylim = c( -23.037, -39.669))+ 
+    theme_map()+
+    theme(panel.grid.major = element_line(colour = "white"), # lineas del grid
+          panel.background = element_rect(fill = "darkgrey")) +
+  geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
+             alpha= 0.9) +
+  scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange", "red"))+
+  scale_size_continuous(range = c(1,80))+
+  theme(legend.position = "none")+  
+  # DESDE AQUÍ SE ANIMA!
+  transition_states(fecha, wrap = F, transition_length = 0)+
+  labs(title = "Terremotos (Escala Richter >= 5.5)", subtitle = "Fecha: {closest_state}", caption = "#DatosDeMierRcoles")
+
+
+```
+
+En el plot anterior no se apreciar correctamente los sismos pre y post terremotos porque hay días que no se registran sismos, esto hace que la gráfica pierde el "ritmo".
+
+
+## Rellenar los días sin sismos 
+
+```{r}
+relleno <- data.frame(fecha =seq(as.Date("2015-07-16"), as.Date("2015-11-16"), "days") )
+
+
+terremoto_coquimbo1<- dplyr::full_join(terremoto_coquimbo, relleno , by ="fecha") %>% 
+  arrange(fecha) %>%
+  replace(., is.na(.), 0) %>% 
+  filter(fecha >= "2015-08-23" & fecha <= "2015-10-10")
+
+#PLOTEANDO (EL FINAL)
+
+gif_cqb <- terremoto_coquimbo1 %>%  ggplot() +
+    borders("world", colour = "gray85", # color limites de paises
+             fill = "black") +  # color de la tierra
+    coord_sf( xlim = c(-83.826, -63.204),ylim = c( -23.037, -39.669))+ 
+      theme_map()+
+      theme(panel.grid.major = element_line(colour = "white"), # lineas del grid
+            panel.background = element_rect(fill = "darkgrey"),
+            plot.caption = element_text(size = 13),
+            legend.position = "none") +
+    geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
+               alpha= 0.9) +
+    scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange",  "red"))+
+    scale_size_continuous(range = c(2,140))+
+    #DESDE AQUÍ SE ANIMA!
+    transition_states(fecha, wrap = F, transition_length = 0)+
+    shadow_wake(0.4)+ # para que los puntos salgan lentamente (ver otras funciones)
+    labs(title = "Sismos (>5.5) días previos y post terremoto en la Región de Coquimbo(2015)", subtitle = "fecha: {closest_state}" ,caption = "#DatosDeMieRcoles")
+
+ # animate(gif_cqb, nframes = 60) # para verlo en consola
+ a_gif <- animate(gif_cqb, nframes = 60)
+  a_gif
+ #guardar
+
+anim_save(a_gif,filename = "cqb-2.gif")
+
+```
+
+
+
