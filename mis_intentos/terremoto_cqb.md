@@ -3,9 +3,9 @@ Terremoto\_cqb\_miercolesdedatos
 
 # Los datos desde el gitbub de datos-de-miercoles
 
-### datos para plotear mundo
+## Datos para plotear mundo
 
-Buscar las coordenadas de la zona a plotear  
+(hay que buscar las coordenadas de la zona a plotear  
 Para Coquimbo usar `xlim = c(-83.826, -63.204),ylim = c( -23.037,
 -39.669)` dentro de `coord_sf()`
 
