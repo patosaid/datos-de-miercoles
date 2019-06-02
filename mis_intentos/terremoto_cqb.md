@@ -4,13 +4,17 @@ Terremoto\_cqb\_miercolesdedatos
 Primero obtener los datos desde el repo de
 \#DatosDeMieRcoles
 
+<<<<<<< HEAD
 ``` r
 terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/terremotos.csv")
 ```
 
 ### Ploteando la capa mundo
+=======
+## Datos para plotear mundo
+>>>>>>> fe35fcb22625227a711ed1d79fcada3e162e1a42
 
-Buscar las coordenadas de la zona a plotear  
+(hay que buscar las coordenadas de la zona a plotear  
 Para Coquimbo usar `xlim = c(-83.826, -63.204),ylim = c( -23.037,
 -39.669)` dentro de `coord_sf()`
 
