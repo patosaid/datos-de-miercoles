@@ -1,17 +1,39 @@
 Terremoto\_cqb\_miercolesdedatos
 ================
 
-# Los datos desde el gitbub de datos-de-miercoles
+Primero obtener los datos desde el repo de
+\#DatosDeMieRcoles
 
-### datos para plotear mundo
+``` r
+terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/terremotos.csv")
+```
+
+### Ploteando la capa mundo
 
 Buscar las coordenadas de la zona a plotear  
 Para Coquimbo usar `xlim = c(-83.826, -63.204),ylim = c( -23.037,
 -39.669)` dentro de `coord_sf()`
 
-## Preparando los datos
+``` r
+library("rnaturalearth")
+world <- ne_countries(scale = "medium", returnclass = "sf")
+library(ggplot2)
+library(ggthemes)
+library(tidyverse)
+ggplot() +
+  borders("world", colour = "gray85", # color limites de paises
+           fill = "black") +  # color de la tierra
+  coord_sf( xlim = c(-83.826, -63.204),ylim = c( -23.037, -39.669))+ 
+    theme_map()+
+    theme(panel.grid.major = element_line(colour = "darkgrey"), # lineas del grid
+          panel.background = element_rect(fill = "darkgrey"))   # fondo
+```
 
-### Escala Richter
+![](terremoto_cqb_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+### Preparando los datos
+
+#### Escala Richter
 
 Para visualizar mejor los diferentes sismos transformar la escala
 Richter con logaritmo
@@ -123,8 +145,8 @@ gif_cqb <- terremoto_coquimbo1 %>%  ggplot() +
 
 ![](terremoto_cqb_files/figure-gfm/unnamed-chunk-5-1.gif)<!-- -->
 
-``` r
- #guardar
+### Guardar gif
 
+``` r
 anim_save(a_gif,filename = "cqb-2.gif")
 ```

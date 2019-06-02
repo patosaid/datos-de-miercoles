@@ -4,20 +4,18 @@ output: github_document
 ---
 
 
-# Los datos desde el gitbub de datos-de-miercoles  
+Primero obtener los datos desde el repo de \#DatosDeMieRcoles
 
-```{r include=F}
-
+```{r message= F, warning=F }
 terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/terremotos.csv")
-
 ```
 
-### datos para plotear mundo  
+### Ploteando la capa mundo  
 
 Buscar las coordenadas de la zona a plotear   
 Para Coquimbo usar `xlim = c(-83.826, -63.204),ylim = c( -23.037, -39.669)` dentro de `coord_sf()`
 
-```{r include=F}
+```{r message= F, warning=F}
 library("rnaturalearth")
 world <- ne_countries(scale = "medium", returnclass = "sf")
 library(ggplot2)
@@ -33,9 +31,9 @@ ggplot() +
 
 ```
 
-## Preparando los datos  
+### Preparando los datos  
 
-### Escala Richter
+#### Escala Richter
 
 Para visualizar mejor los diferentes sismos transformar la escala Richter con logaritmo (http://matematicasentumundo.es/NATURALEZA/naturaleza_Richter.htm) : 
 
@@ -86,7 +84,7 @@ terremoto_coquimbo %>%  ggplot() +
 En el plot anterior no se apreciar correctamente los sismos pre y post terremotos porque hay días que no se registran sismos, esto hace que la gráfica pierde el "ritmo".
 
 
-## Rellenar los días sin sismos 
+## Rellenar los días sin sismos  
 
 ```{r}
 relleno <- data.frame(fecha =seq(as.Date("2015-07-16"), as.Date("2015-11-16"), "days") )
@@ -120,7 +118,11 @@ gif_cqb <- terremoto_coquimbo1 %>%  ggplot() +
  # animate(gif_cqb, nframes = 60) # para verlo en consola
  a_gif <- animate(gif_cqb, nframes = 60)
   a_gif
- #guardar
+```
+
+### Guardar gif
+
+```{r}
 
 anim_save(a_gif,filename = "cqb-2.gif")
 
