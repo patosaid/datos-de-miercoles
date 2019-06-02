@@ -76,3 +76,79 @@ str(ciudad)
 
 ```
 
+
+### intentar terremoto coquimbo , está como las weas
+
+ver https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
+
+https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf
+
+
+
+
+```{r}
+install.packages(c("cowplot", "googleway", "ggrepel", 
+                   "ggspatial", "libwgeom",  "rnaturalearth", "rnaturalearthdata"))
+library("rnaturalearth")
+library("rnaturalearthdata")
+install.packages("rgeos")
+library(rgeos)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+class(world)
+
+ggplot(data = world) +
+  theme_map()    
+
+
+ggplot(world) +
+  borders( colour = "gray85", fill = "gray80") +
+  theme_map()
+
+
+ggplot(data = world) +
+  borders( colour = "red", fill = "black") +
+  coord_sf( xlim = c(-83.826, -63.204),ylim = c( -23.037, -39.669), expand = FALSE)+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_line(color = gray(.5), linetype = "dashed", size = 0.5), panel.background = element_rect(fill = "grey"))
+
+head(terremotos)
+terremotos %>% filter(fecha == "2015-09-16") %>%  arrange(desc(magnitud))
+
+terremoto_coquimbo <- terremotos %>% filter(fecha > "2015-07-16" & fecha < "2015-11-16") %>%  
+  filter(latitud < -23.037 & latitud > -39.669) %>% filter(longitud > -83.826 & longitud < -63.204)
+library(ggthemes)
+library(gganimate)
+
+terremoto_coquimbo3 %>%  ggplot() +
+  borders("world", colour = "gray85", fill = "gray80") +
+  theme_map() +
+  geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
+             alpha= 0.9) +
+  scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange", "red"))+
+  scale_size_continuous(range = c(2,45))+
+  theme(legend.position = "none")+
+  transition_states(fecha, wrap = F, transition_length = 0)+
+  labs(title = "Terremotos (Escala Richter >= 5.5)", subtitle = "Año: {closest_state}")
+
+
+
+fecha <- seq(as.Date("2015-07-16"), as.Date("2015-11-16"), "days")
+magnitud <- rep( 0 , length(fecha))
+relleno <- data.frame(fecha, magnitud)
+relleno <- data.frame(fecha =seq(as.Date("2015-07-16"), as.Date("2015-11-16"), "days") )
+relleno
+
+terremoto_coquimbo3<- dplyr::full_join(terremoto_coquimbo2, relleno , by ="fecha") %>%  arrange(fecha)
+
+terremoto_coquimbo3 <-terremoto_coquimbo3 %>%  replace(., is.na(.), 0)
+
+
+
+```
+
+
