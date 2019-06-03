@@ -1,4 +1,4 @@
-Terremoto\_cqb\_miercolesdedatos
+Terremoto Coquimbo,Chile 2015
 ================
 
 Primero obtener los datos desde el repo de
@@ -10,7 +10,7 @@ terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/
 
 ### Ploteando la capa mundo
 
-(hay que buscar las coordenadas de la zona a plotear  
+Buscar las coordenadas de la zona a plotear  
 Para Coquimbo usar `xlim = c(-83.826, -63.204),ylim = c( -23.037,
 -39.669)` dentro de `coord_sf()`
 
@@ -43,6 +43,12 @@ Richter con logaritmo
 terremotos <- terremotos %>%   filter( tipo == "terremoto" ) %>% 
   mutate(energia =10^(11.8 + 1.5 *magnitud) )
 ```
+
+| esquina      | lat      | long     |
+| ------------ | -------- | -------- |
+| superior izq | \-23.037 | \-83.826 |
+| inf derecha  | \-39.669 | \-63.204 |
+| en R         | ylim     | xlim     |
 
 ``` r
 # Verificando el dia del terremoto
@@ -149,4 +155,87 @@ gif_cqb <- terremoto_coquimbo1 %>%  ggplot() +
 
 ``` r
 anim_save(a_gif,filename = "cqb-2.gif")
+```
+
+# Concepción, Chile 27F 2010
+
+Cordenadas sacadas de OpenStreetMap  
+\* Superior izquierda: -33.027,-80.068 \* Inferior derecha:
+-40.313,-68.071
+
+**Cordenadas sacadas de OpenStreetMap**
+
+| esquina      | lat      | long     |
+| ------------ | -------- | -------- |
+| superior izq | \-33.027 | \-80.068 |
+| inf derecha  | \-40.313 | \-68.071 |
+| en R         | ylim     | xlim     |
+
+``` r
+terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/terremotos.csv")
+
+terremotos <- terremotos %>%   filter( tipo == "terremoto" ) %>% 
+  mutate(energia =10^(11.8 + 1.5 *magnitud) )
+
+# Verificando el dia del terremoto
+terremotos %>% filter(fecha == "2010-02-27") %>%  arrange(desc(magnitud)) #8.8
+```
+
+    ## # A tibble: 39 x 8
+    ##    fecha      hora   latitud longitud tipo     profundidad magnitud energia
+    ##    <date>     <drtn>   <dbl>    <dbl> <chr>          <dbl>    <dbl>   <dbl>
+    ##  1 2010-02-27 06:34    -36.1    -72.9 terremo~        22.9      8.8 1.00e25
+    ##  2 2010-02-27 08:01    -37.8    -75.0 terremo~        35        7.4 7.94e22
+    ##  3 2010-02-27 15:45    -24.9    -65.6 terremo~        10        6.3 1.78e21
+    ##  4 2010-02-27 06:52    -34.9    -72.6 terremo~        35        6.2 1.26e21
+    ##  5 2010-02-27 19:00    -33.4    -71.8 terremo~        31.1      6.2 1.26e21
+    ##  6 2010-02-27 08:25    -34.7    -72.4 terremo~        35        6.1 8.91e20
+    ##  7 2010-02-27 17:24    -36.4    -73.2 terremo~        19        6.1 8.91e20
+    ##  8 2010-02-27 06:51    -31.7    -69.1 terremo~        39.8      6   6.31e20
+    ##  9 2010-02-27 07:12    -33.9    -71.9 terremo~        35        6   6.31e20
+    ## 10 2010-02-27 07:37    -36.9    -72.7 terremo~        35        6   6.31e20
+    ## # ... with 29 more rows
+
+``` r
+terremoto_27F <- terremotos %>% 
+  filter(fecha > "2010-01-26" & fecha < "2010-03-28") %>%  
+  filter(latitud < -33.027 & latitud > -80.068 ) %>% 
+  filter( longitud < -68.071 & longitud -40.313) %>%  arrange(desc(magnitud))
+
+relleno <- data.frame(fecha =seq(as.Date("2010-01-01"), as.Date("2010-04-01"), "days") )
+
+terremoto_27F <- full_join(terremoto_27F, relleno , by ="fecha") %>% 
+  arrange(fecha) %>%
+  replace(., is.na(.), 0) %>% 
+  filter(fecha > "2010-01-27" & fecha < "2010-03-27") 
+
+gif_27F <- terremoto_27F %>%  ggplot() +
+    borders("world", colour = "gray85", # color limites de paises
+             fill = "black") +  # color de la tierra
+    coord_sf( xlim = c(-79.068, -66.071 ),ylim = c( -31.027, -41.313 ))+ 
+      theme_map()+
+      theme(panel.grid.major = element_line(colour = "white"), # lineas del grid
+            panel.background = element_rect(fill = "darkgrey"),
+            plot.caption = element_text(size = 13),
+            legend.position = "none") +
+    geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
+               alpha= 0.9) +
+    scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange",  "red"))+
+    scale_size_continuous(range = c(3,140))+
+    #DESDE AQUÍ SE ANIMA!
+    transition_states(fecha, wrap = F, transition_length = 0)+
+    shadow_wake(0.4)+ # para que los puntos salgan lentamente (ver otras funciones)
+    labs(title = "Sismos (>5.5) meses previo y post 27F (8.8)", subtitle = "fecha: {closest_state}" ,caption = "#DatosDeMieRcoles")
+
+ 
+  a_gif <- animate(gif_27F, nframes = 60)
+  a_gif
+```
+
+![](terremoto_cqb_files/figure-gfm/unnamed-chunk-7-1.gif)<!-- -->
+
+### Guardar gif
+
+``` r
+anim_save(a_gif,filename = "27F.gif")
 ```

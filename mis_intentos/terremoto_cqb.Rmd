@@ -1,5 +1,5 @@
 ---
-title: "Terremoto_cqb_miercolesdedatos"
+title: "Terremoto Coquimbo,Chile 2015"
 output: github_document
 ---
 
@@ -44,6 +44,12 @@ terremotos <- terremotos %>%   filter( tipo == "terremoto" ) %>%
 
 ```
 
+
+| esquina | lat | long |    
+|-----|-----|----|
+|superior izq | -23.037| -83.826 |
+|inf derecha | -39.669 | -63.204 | 
+| en R       | ylim | xlim |
 
 ```{r}
 # Verificando el dia del terremoto
@@ -125,6 +131,77 @@ gif_cqb <- terremoto_coquimbo1 %>%  ggplot() +
 ```{r}
 
 anim_save(a_gif,filename = "cqb-2.gif")
+
+```
+
+
+# Concepción, Chile 27F 2010
+
+
+Cordenadas sacadas de OpenStreetMap  
+* Superior izquierda: -33.027,-80.068 
+* Inferior derecha: -40.313,-68.071
+
+**Cordenadas sacadas de OpenStreetMap**
+
+| esquina | lat | long |    
+|-----|-----|----|
+|superior izq | -33.027| -80.068 |
+|inf derecha | -40.313 | -68.071 | 
+| en R       | ylim | xlim |
+
+
+```{r  message= F, warning=F }
+terremotos <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-05-29/terremotos.csv")
+
+terremotos <- terremotos %>%   filter( tipo == "terremoto" ) %>% 
+  mutate(energia =10^(11.8 + 1.5 *magnitud) )
+
+# Verificando el dia del terremoto
+terremotos %>% filter(fecha == "2010-02-27") %>%  arrange(desc(magnitud)) #8.8
+
+
+terremoto_27F <- terremotos %>% 
+  filter(fecha > "2010-01-26" & fecha < "2010-03-28") %>%  
+  filter(latitud < -33.027 & latitud > -80.068 ) %>% 
+  filter( longitud < -68.071 & longitud -40.313) %>%  arrange(desc(magnitud))
+
+relleno <- data.frame(fecha =seq(as.Date("2010-01-01"), as.Date("2010-04-01"), "days") )
+
+terremoto_27F <- full_join(terremoto_27F, relleno , by ="fecha") %>% 
+  arrange(fecha) %>%
+  replace(., is.na(.), 0) %>% 
+  filter(fecha > "2010-01-27" & fecha < "2010-03-27") 
+
+gif_27F <- terremoto_27F %>%  ggplot() +
+    borders("world", colour = "gray85", # color limites de paises
+             fill = "black") +  # color de la tierra
+    coord_sf( xlim = c(-79.068, -66.071 ),ylim = c( -31.027, -41.313 ))+ 
+      theme_map()+
+      theme(panel.grid.major = element_line(colour = "white"), # lineas del grid
+            panel.background = element_rect(fill = "darkgrey"),
+            plot.caption = element_text(size = 13),
+            legend.position = "none") +
+    geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
+               alpha= 0.9) +
+    scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange",  "red"))+
+    scale_size_continuous(range = c(3,140))+
+    #DESDE AQUÍ SE ANIMA!
+    transition_states(fecha, wrap = F, transition_length = 0)+
+    shadow_wake(0.4)+ # para que los puntos salgan lentamente (ver otras funciones)
+    labs(title = "Sismos (>5.5) meses previo y post 27F (8.8)", subtitle = "fecha: {closest_state}" ,caption = "#DatosDeMieRcoles")
+
+ 
+  a_gif <- animate(gif_27F, nframes = 60)
+  a_gif
+
+```
+
+### Guardar gif
+
+```{r}
+
+anim_save(a_gif,filename = "27F.gif")
 
 ```
 
