@@ -185,7 +185,7 @@ gif_27F <- terremoto_27F %>%  ggplot() +
     geom_point(aes(x = longitud, y = latitud, size = energia, colour= magnitud),
                alpha= 0.9) +
     scale_colour_gradientn(colours = c("blue", "green", "yellow", "orange",  "red"))+
-    scale_size_continuous(range = c(3,140))+
+    scale_size_continuous(range = c(5,140))+
     #DESDE AQUÍ SE ANIMA!
     transition_states(fecha, wrap = F, transition_length = 0)+
     shadow_wake(0.4)+ # para que los puntos salgan lentamente (ver otras funciones)
@@ -206,4 +206,6 @@ anim_save(a_gif,filename = "27F.gif")
 ```
 
 
+**NOTA** 
 
+> Los puntos se ven de SOLO de amarillo a rojo (no hay azules ni verdes), porque al rellenar con días se agregaron con magnitud cero. (arreglar)
