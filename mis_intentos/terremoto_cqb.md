@@ -108,10 +108,9 @@ terremoto_coquimbo %>%  ggplot() +
 
 ![](terremoto_cqb_files/figure-gfm/unnamed-chunk-4-1.gif)<!-- -->
 
-En el plot anterior no se apreciar correctamente los sismos pre y post
+En el plot anterior no se aprecian correctamente los sismos pre y post
 terremotos porque hay días que no se registran sismos, esto hace que la
-gráfica pierde el
-“ritmo”.
+gráfica pierda “ritmo”.
 
 ## Rellenar los días sin sismos
 
